@@ -5,9 +5,9 @@ import subprocess
 import sys
 import argparse
 
-QUEUE_CHOICES = ['h', 'b', 'm', 'hopfield', 'boltzmann', 'makkapakka', 'debug']
+QUEUE_CHOICES = ['h', 'b', 'm', 'hopfield', 'boltzmann', 'makkapakka']
 
-USER_NOTICE = 'zlaunch大体上遵循了ilaunch的用法；由于Argparser的限制，在输入最后需要提交执行的命令前一般需要插入" -- "，例如：zlaunch -q hopfield -- vcs -ID'
+USER_NOTICE = 'zlaunch 是 ilaunch 的 Python 实现；在输入需要提交执行的命令前一般需要插入" -- "，例如：zlaunch -q hopfield -- vcs -ID'
 
 parser = argparse.ArgumentParser(prog='zluanch', description='Run anything on LSF queues.',
                                  epilog=USER_NOTICE)
@@ -28,35 +28,31 @@ commands = []
 # ==================================================================================================
 # Prepare args
 
-if args.lfs:
-    if args.queue == 'h':
-        args.queue = 'hopfield'
-    elif args.queue == 'b':
-        args.queue = 'boltzmann'
-    elif args.queue == 'm':
-        args.queue = 'makkapakka'
-else:
-    print('SLURM has only one queue (partition): debug')
-    args.queue = 'debug'
+if args.queue == 'h':
+    args.queue = 'hopfield'
+elif args.queue == 'b':
+    args.queue = 'boltzmann'
+elif args.queue == 'm':
+    args.queue = 'makkapakka'
 
-bsub_args = ' '.join(args.args)
+
+scheduler_args = ' '.join(args.args)
+if args.env is not None:
+    if args.lfs:
+        scheduler_args += f'-env all,{args.env}'
+    else:
+        scheduler_args += f'--export=ALL,{args.env}'
+
 if args.gpu is not None:
     if args.queue != "makkapakka":
         print(f"Warn: <{args.queue}> does NOT accept GPU tasks. Submitted to <makkapakka>.")
         args.queue = 'makkapakka'
+
     if args.lfs:
-        bsub_args += f' CUDA_VISIBLE_DEVICES={args.gpu}'
+        scheduler_args += f' CUDA_VISIBLE_DEVICES={args.gpu}' # workaround
     else:
         gpu_count = len(args.gpu.replace(',', ''))
-        bsub_args += f'--gpus={args.gpu}'
-
-if args.env is not None:
-    if args.lfs:
-        bsub_args += f'-env all,{args.env}'
-    else:
-
-        bsub_args += f'--export=ALL,{args.env}'
-
+        scheduler_args += f'--gpus={args.gpu}'
 
 # ==================================================================================================
 # Process EDA module loading
@@ -74,15 +70,16 @@ if args.list:
 # ==================================================================================================
 # Submit commands to queue
 
-bsub_cmd = ' '.join(args.command)
-if bsub_cmd != '':
+user_cmd = ' '.join(args.command)
+if user_cmd != '':
     if args.lfs:
-        cmd = f"bsub -q {args.queue} -Is -env {args.env} {bsub_args} {bsub_cmd}"
+        commit_cmd = f"bsub -q {args.queue} -Is -env {args.env} {scheduler_args} {user_cmd}"
     else:
         if 'DISPLAY' in os.environ:
-            os.environ['DISPLAY'] = 'mgmt01:20'
-        cmd = f"srun --pty --partition={args.queue} {bsub_args} {bsub_cmd}"
-    commands += [cmd]
+            uid = os.getuid() - 1000
+            os.environ['DISPLAY'] = f'mgmt01:{uid}'
+        commit_cmd = f"srun --pty --partition={args.queue} {scheduler_args} {user_cmd}"
+    commands += [commit_cmd]
 
 cmd = ";\n   ".join(commands)
 if cmd != '':
