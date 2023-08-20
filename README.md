@@ -40,16 +40,15 @@ zlaunch -q hopfield -- verdi
 
 查看帮助：`zlaunch -h` 或 `zlaunch --help`。
 ```
-usage: zluanch [-h] [--lfs] [-p] [-l MODULE] [-q {h,b,m,hopfield,boltzmann,makkapakka}] [--gpu ID_LIST] [--env ENV] [--list] [--args ARGS] [command ...]
+usage: zluanch [-h] [--lfs] [-p] [-l MODULE] [-q {h,b,m,hopfield,boltzmann,makkapakka}] [--gpu NUM] [--env ENV] [--list] [--args ARGS] [command ...]
 options:
   -h, --help            show this help message and exit
-  --lfs                 Use LFS instead of the default SLURM scheduler.
   -p, --purge           Purge all the loaded modules before loading.
   -l MODULE, --load MODULE
                         Load modules (available modules refer to 'module av').
   -q {h,b,m,hopfield,boltzmann,makkapakka}, --queue {h,b,m,hopfield,boltzmann,makkapakka}
                         Select an LSF queue to launch.
-  --gpu ID_LIST         Set visible GPU ids, such as '0,1,2,3'
+  --gpu NUM             Set wanted GPU number, such as 3
   --env ENV             Environment variables, A=1,B=2
   --list                Print modules now loaded.
   --args ARGS           Extra args to be set when bsub/srun.
@@ -58,14 +57,13 @@ options:
 如上所示，`zlaunch` 命令具有以下参数：
 |参数|说明|
 |----|---|
-|`--lfs`| 使用 LFS.bsub 提交任务，否则默认将使用 SLURM.srun。目前两者能调度的服务器范围有区别，未来将逐步淘汰 LFS。 |
 |`-p` 或 `--purge`| 在提交任务前卸载所有 module（需搭配 `--load` 参数使用）。 |
 |`-l MODULE` 或 `--load MODULE`| 在提交任务前加载该 module。 |
 |`-q QUEUE`或`--queue QUEUE`| 指定提交的队列，可以是 `h`（`hopfield`）、`b`（`boltzmann`）、`m`（`makkapakka`），默认是 `hopfield`。|
-|`--gpu ID_LIST`|指定GPU，例如四张卡就写 `--gpu 0,1,2,3`，这个接口未来会改。现阶段只有 LFS 可以调度到 GPU 队列。|
+|`--gpu GPU_NUM`|指定数量，例如四张卡就写 `--gpu 4`。|
 |`--env A=1,C=2`|指定环境变量，复杂规则可以看 `srun` 的文档。原则上不需要修改，zLaunch会将本地的当前环境变量提交到节点上。|
 |`--list`| 提交前首先打印 `module list`。如果你不是使用我的 EDA 环境，这个参数对你不一定有意义。|
-|`--args XXX`| 这里的 XXX 会直接作为 srun（或bsub）的参数，用于用户精细化控制提交任务的行为。一般用不上，当你需要调这个了，建议不要用zLaunch了，自己手写srun（或bsub）命令比较合适。|
+|`--args XXX`| 这里的 XXX 会直接作为 srun 的参数，用于用户精细化控制提交任务的行为。一般用不上，当你需要调这个了，建议不要用zLaunch了，自己手写 srun 命令比较合适。|
 
 最后附上你要执行的任务。在任务和参数中间，建议加一个`--`符号隔断，像这样：
 
