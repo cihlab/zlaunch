@@ -9,12 +9,13 @@ QUEUE_CHOICES = ['h', 'b', 'm', 'hopfield', 'boltzmann', 'makkapakka']
 
 DESCRIPTION = 'zLaunch 是 ilaunch 的 Python 实现，帮助用户在 FICS 集群运行 EDA 任务。完整文档在 github.com/cihlab/zlaunch。'
 USER_NOTICE = '在输入需要提交执行的命令前一般需要插入" -- "，例如：zlaunch -q hopfield -- vcs -ID。'
-DEFAULT_CPU_NUM = 4
+DEFAULT_CPU_NUM = 10
 
 parser = argparse.ArgumentParser(prog='zluanch', description=DESCRIPTION, epilog=USER_NOTICE)
 parser.add_argument("-p", "--purge", dest="purge", action="store_true", help="Purge all the loaded modules before loading.")
 parser.add_argument("-l", "--load", dest="load", action="append", metavar="MODULE", help="Load modules (available modules refer to 'module av').")
 parser.add_argument("-q", "--queue", dest="queue", choices=QUEUE_CHOICES, default='hopfield', help="Select an SLURM queue to launch.")
+parser.add_argument("--cpu", dest="cpu", metavar='NUM', type=int, default=DEFAULT_CPU_NUM, help=f"Set wanted CPU core number. default: {DEFAULT_CPU_NUM}")
 parser.add_argument("--gpu", dest="gpu", metavar='NUM', type=int, help="Set wanted GPU number, such as 3")
 parser.add_argument("--env", dest="env", type=str, help="Environment variables, A=1,B=2")
 parser.add_argument("--list", dest="list", action='store_true', help="Print modules now loaded.")
@@ -65,7 +66,7 @@ if user_cmd != '':
     if 'DISPLAY' in os.environ:
         uid = os.getuid() - 1000
         os.environ['DISPLAY'] = f'mgmt01:{uid}'
-    commit_cmd = f"srun --pty -c {DEFAULT_CPU_NUM} --partition={args.queue} {scheduler_args} {user_cmd}"
+    commit_cmd = f"srun --pty -c {args.cpu} -p {args.queue} {scheduler_args} {user_cmd}"
     commands += [commit_cmd]
 
 # ==================================================================================================
