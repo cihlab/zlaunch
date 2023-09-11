@@ -61,8 +61,8 @@ options:
 |`-p` 或 `--purge`| 在提交任务前卸载所有 module（需搭配 `--load` 参数使用）。 |
 |`-l MODULE` 或 `--load MODULE`| 在提交任务前加载该 module。 |
 |`-q QUEUE`或`--queue QUEUE`| 指定提交的队列，可以是 `h`（`hopfield`）、`b`（`boltzmann`）、`m`（`makkapakka`），默认是 `hopfield`。|
-|`--gpu GPU_NUM`|指定GPU数量，例如4张GPU计算卡就写 `--gpu 4`。|
-|`--gpu CPU_NUM`|指定CPU数量，例如20个核心就写 `--cpu 20`，默认为10。|
+|`--gpu NUM`|指定GPU数量，例如4张GPU计算卡就写 `--gpu 4`。|
+|`--cpu NUM`|指定CPU数量，例如20个核心就写 `--cpu 20`，默认为10。|
 |`--env A=1,C=2`|指定环境变量，复杂规则可以看 `srun` 的文档。原则上不需要修改，zLaunch会将本地的当前环境变量提交到节点上。|
 |`--list`| 提交前首先打印 `module list`。|
 |`--args XXX`| 这里的 XXX 会直接作为 srun 的参数，用于用户精细化控制提交任务的行为。一般用不上，当你需要调这个了，建议不要用zLaunch了，自己手写 srun 命令比较合适。|
