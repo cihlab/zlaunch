@@ -30,17 +30,18 @@ args = parser.parse_args()
 if args.queue == 'h':
     args.queue = 'hopfield'
 elif args.queue == 'b':
-    print("SLURM has NOT supported boltzmann yet.")
     args.queue = 'boltzmann'
 elif args.queue == 'm':
     args.queue = 'makkapakka'
 
 scheduler_args = ' '.join(args.args)
 if args.env is not None:
-    scheduler_args += f'--export=ALL,{args.env}'
+    scheduler_args += f'--export=ALL,{args.env} '
+else:
+    scheduler_args += '--export=ALL '
 
 if args.gpu is not None:
-    scheduler_args += f'--gpus={args.gpu}'
+    scheduler_args += f'--gpus={args.gpu} '
     if args.queue != "makkapakka":
         print(f"Warn: <{args.queue}> does NOT accept GPU tasks. Submitted to <makkapakka>.")
         args.queue = 'makkapakka'
