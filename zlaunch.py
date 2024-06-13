@@ -55,6 +55,7 @@ commands = []
 if args.purge:
     print("All modules purged before loading.")
     commands += ["module purge"]
+    commands += ["module load core/eda"]
 
 if args.load is not None:
     modules = " ".join(args.load)
