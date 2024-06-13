@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 import argparse
+import socket
 
 QUEUE_CHOICES = ['h', 'b', 'm', 'hopfield', 'boltzmann', 'makkapakka']
 
@@ -65,8 +66,8 @@ if args.list:
 user_cmd = ' '.join(args.command)
 if user_cmd != '':
     if 'DISPLAY' in os.environ:
-        uid = os.getuid() - 1000
-        os.environ['DISPLAY'] = f'mgmt01:{uid}'
+        hostname = socket.gethostname()
+        os.environ['DISPLAY'] = f'{hostname}:01'
     commit_cmd = f"srun --pty -c {args.cpu} -p {args.queue} {scheduler_args} {user_cmd}"
     commands += [commit_cmd]
 
